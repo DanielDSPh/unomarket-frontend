@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unomarket-frontend
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: unomarket-front
+  template:
+    metadata:
+      labels:
+        app: unomarket-front
+    spec:
+      containers:
+      - name: web
+        # Cambia esto por tu usuario de Docker Hub
+        image: LuDanielDoRi/unomarket-front:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "64Mi" # Ultra ligero para salvar tu RAM
