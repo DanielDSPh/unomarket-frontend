@@ -16,7 +16,7 @@ spec:
       containers:
       - name: web
         # Cambia esto por tu usuario de Docker Hub
-        image: LuDanielDoRi/unomarket-front:v1
+        image: ludanieldori/unomarket-front:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 80
