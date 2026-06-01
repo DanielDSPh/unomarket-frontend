@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps/v3
 kind: Deployment
 metadata:
   name: unomarket-frontend
@@ -16,7 +16,7 @@ spec:
       containers:
       - name: web
         # Cambia esto por tu usuario de Docker Hub
-        image: ludanieldori/unomarket-front:v1
+        image: ludanieldori/unomarket-front:v3
         imagePullPolicy: Always
         ports:
         - containerPort: 80
