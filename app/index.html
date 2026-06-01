@@ -1,38 +1,1495 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uno Market - Tienda</title>
-    <style>
-        body {
-            /* Este es el color exacto que el profesor pide cambiar después */
-            background-color: #A32636; 
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        h1 { font-size: 3.5rem; margin-bottom: 10px; }
-        h2 { font-size: 2rem; font-weight: normal; }
-        .version-badge {
-            background: rgba(0,0,0,0.2);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-family: monospace;
-            font-size: 1.2rem;
-            margin-top: 20px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uno Market — Juegos de Mesa</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg-base:      #0d1117;
+    --bg-surface:   #161b22;
+    --bg-elevated:  #1c2230;
+    --bg-hover:     #21273a;
+    --border:       #30363d;
+    --border-glow:  #1f6feb55;
+    --blue:         #1f6feb;
+    --blue-light:   #388bfd;
+    --blue-dim:     #1f6feb22;
+    --green:        #23d18b;
+    --green-dim:    #23d18b18;
+    --green-light:  #56e5a8;
+    --text-primary: #e6edf3;
+    --text-secondary:#8b949e;
+    --text-muted:   #484f58;
+    --red:          #f85149;
+    --yellow:       #e3b341;
+    --font-display: 'Syne', sans-serif;
+    --font-mono:    'Space Mono', monospace;
+    --radius:       8px;
+    --radius-lg:    14px;
+    --transition:   0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: .5;
+  }
+
+  /* ── SCANLINES ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+  }
+
+  /* ── GRID BACKGROUND ── */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: .18;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 100%);
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrapper { position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,17,23,.88);
+    backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 clamp(1rem, 5vw, 3rem);
+  }
+
+  .header-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; align-items: center; gap: 2rem;
+    height: 64px;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: .75rem;
+    text-decoration: none; flex-shrink: 0;
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--blue), var(--green));
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-family: var(--font-mono);
+    font-weight: 700; font-size: .85rem;
+    color: #fff;
+    box-shadow: 0 0 16px var(--blue)44;
+    position: relative; overflow: hidden;
+  }
+
+  .logo-mark::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.2), transparent);
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-weight: 800; font-size: 1.2rem;
+    color: var(--text-primary);
+    letter-spacing: -.02em;
+  }
+
+  .logo-text span { color: var(--green); }
+
+  nav { display: flex; gap: .25rem; flex: 1; }
+
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: .78rem; font-weight: 400;
+    color: var(--text-secondary);
+    text-decoration: none; padding: .4rem .75rem;
+    border-radius: var(--radius);
+    transition: color var(--transition), background var(--transition);
+    white-space: nowrap;
+  }
+
+  .nav-link:hover, .nav-link.active {
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+  }
+
+  .nav-link.active { color: var(--blue-light); }
+
+  .header-actions { display: flex; align-items: center; gap: .75rem; margin-left: auto; }
+
+  .search-bar {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .35rem .75rem;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    min-width: 200px;
+  }
+
+  .search-bar:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-dim);
+  }
+
+  .search-bar svg { color: var(--text-muted); flex-shrink: 0; }
+
+  .search-bar input {
+    background: none; border: none; outline: none;
+    font-family: var(--font-mono); font-size: .78rem;
+    color: var(--text-primary); width: 100%;
+  }
+
+  .search-bar input::placeholder { color: var(--text-muted); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--font-mono); font-size: .78rem; font-weight: 700;
+    border: none; border-radius: var(--radius); cursor: pointer;
+    padding: .45rem 1rem; transition: all var(--transition);
+    text-decoration: none; white-space: nowrap;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--blue);
+    color: var(--blue-light);
+    background: var(--blue-dim);
+  }
+
+  .btn-primary {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 0 12px var(--blue)44;
+  }
+
+  .btn-primary:hover {
+    background: var(--blue-light);
+    box-shadow: 0 0 20px var(--blue)66;
+    transform: translateY(-1px);
+  }
+
+  .cart-btn {
+    position: relative;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: var(--radius);
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    cursor: pointer; transition: all var(--transition);
+  }
+
+  .cart-btn:hover { border-color: var(--green); color: var(--green); }
+
+  .cart-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: var(--green); color: #0d1117;
+    font-family: var(--font-mono); font-size: .6rem; font-weight: 700;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: grid; place-items: center;
+    border: 2px solid var(--bg-base);
+    transition: transform .2s;
+  }
+
+  .cart-badge.bump { animation: badge-bump .3s ease; }
+
+  @keyframes badge-bump {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 5vw, 3rem);
+    max-width: 1280px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem; align-items: center;
+  }
+
+  @media (max-width: 768px) { .hero { grid-template-columns: 1fr; } }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--font-mono); font-size: .72rem;
+    color: var(--green); background: var(--green-dim);
+    border: 1px solid var(--green)44;
+    border-radius: 999px; padding: .3rem .9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: .3; }
+  }
+
+  .hero-title {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 800; line-height: 1.05;
+    letter-spacing: -.03em;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-title .accent-blue { color: var(--blue-light); }
+  .hero-title .accent-green { color: var(--green); }
+
+  .hero-sub {
+    font-family: var(--font-mono);
+    font-size: .9rem; line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 2rem; max-width: 480px;
+  }
+
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .hero-stats {
+    display: flex; gap: 2.5rem; margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-val {
+    font-size: 1.8rem; font-weight: 800; color: var(--text-primary);
+    line-height: 1; font-family: var(--font-mono);
+  }
+
+  .stat-val span { color: var(--blue-light); }
+
+  .stat-label {
+    font-family: var(--font-mono); font-size: .7rem;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: .08em; margin-top: .25rem;
+  }
+
+  /* HERO VISUAL */
+  .hero-visual {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) { .hero-visual { display: none; } }
+
+  .hero-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    transition: transform var(--transition), box-shadow var(--transition);
+    cursor: pointer;
+  }
+
+  .hero-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.4), 0 0 0 1px var(--border-glow);
+  }
+
+  .hero-card:first-child { grid-column: span 2; }
+
+  .hero-card-emoji {
+    font-size: 2.5rem; margin-bottom: .75rem;
+    display: block; line-height: 1;
+  }
+
+  .hero-card-name {
+    font-weight: 700; font-size: .95rem;
+    margin-bottom: .25rem;
+  }
+
+  .hero-card-price {
+    font-family: var(--font-mono);
+    font-size: .78rem; color: var(--green);
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+    overflow: hidden; padding: .6rem 0;
+  }
+
+  .ticker {
+    display: flex; gap: 0;
+    animation: ticker-scroll 30s linear infinite;
+    width: max-content;
+  }
+
+  .ticker-item {
+    display: flex; align-items: center; gap: .5rem;
+    font-family: var(--font-mono); font-size: .72rem;
+    color: var(--text-secondary); padding: 0 2rem;
+    white-space: nowrap;
+  }
+
+  .ticker-item .dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--blue); flex-shrink: 0;
+  }
+
+  .ticker-item .hot { color: var(--green); }
+
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── SECTION ── */
+  .section {
+    padding: clamp(3rem,6vw,5rem) clamp(1rem,5vw,3rem);
+    max-width: 1280px; margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex; align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap;
+  }
+
+  .section-label {
+    font-family: var(--font-mono); font-size: .72rem;
+    text-transform: uppercase; letter-spacing: .12em;
+    color: var(--blue-light); margin-bottom: .5rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800; letter-spacing: -.02em;
+  }
+
+  /* ── FILTERS ── */
+  .filter-bar {
+    display: flex; gap: .5rem; flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+
+  .filter-chip {
+    font-family: var(--font-mono); font-size: .72rem;
+    padding: .35rem .9rem; border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary); cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .filter-chip:hover { border-color: var(--blue); color: var(--blue-light); }
+
+  .filter-chip.active {
+    background: var(--blue-dim);
+    border-color: var(--blue);
+    color: var(--blue-light);
+  }
+
+  /* ── PRODUCT GRID ── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ── PRODUCT CARD ── */
+  .product-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .product-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-glow);
+    box-shadow: 0 20px 50px rgba(0,0,0,.5), 0 0 0 1px var(--border-glow);
+  }
+
+  .product-card.featured {
+    border-color: var(--green)44;
+    box-shadow: 0 0 30px var(--green)11;
+  }
+
+  .product-card.featured::before {
+    content: '⚡ DESTACADO';
+    position: absolute; top: .75rem; left: .75rem;
+    font-family: var(--font-mono); font-size: .6rem; font-weight: 700;
+    color: var(--green); background: var(--green-dim);
+    border: 1px solid var(--green)44;
+    border-radius: 999px; padding: .2rem .6rem; z-index: 2;
+    letter-spacing: .08em;
+  }
+
+  .product-img {
+    height: 180px;
+    display: grid; place-items: center;
+    background: var(--bg-elevated);
+    position: relative; overflow: hidden;
+    font-size: 5rem; line-height: 1;
+    transition: background var(--transition);
+  }
+
+  .product-card:hover .product-img { background: var(--bg-hover); }
+
+  .product-img::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, var(--bg-surface));
+    pointer-events: none;
+  }
+
+  .product-body {
+    padding: 1.1rem 1.25rem 1.25rem;
+    flex: 1; display: flex; flex-direction: column; gap: .5rem;
+  }
+
+  .product-category {
+    font-family: var(--font-mono); font-size: .65rem;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: var(--text-muted);
+  }
+
+  .product-name {
+    font-weight: 700; font-size: 1rem;
+    line-height: 1.3; color: var(--text-primary);
+  }
+
+  .product-desc {
+    font-family: var(--font-mono); font-size: .73rem;
+    line-height: 1.6; color: var(--text-secondary);
+    flex: 1;
+  }
+
+  .product-meta {
+    display: flex; align-items: center; gap: .75rem;
+    flex-wrap: wrap; margin-top: .25rem;
+  }
+
+  .product-players {
+    font-family: var(--font-mono); font-size: .68rem;
+    color: var(--text-muted); display: flex; align-items: center; gap: .3rem;
+  }
+
+  .product-age {
+    font-family: var(--font-mono); font-size: .68rem;
+    color: var(--text-muted); display: flex; align-items: center; gap: .3rem;
+  }
+
+  .product-footer {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: .5rem;
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .product-price {
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 1.2rem; color: var(--text-primary);
+  }
+
+  .product-price .currency {
+    font-size: .75rem; color: var(--text-muted); vertical-align: super;
+  }
+
+  .product-price .original {
+    font-size: .75rem; color: var(--text-muted);
+    text-decoration: line-through; margin-left: .35rem; font-weight: 400;
+  }
+
+  .add-cart-btn {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: var(--radius);
+    padding: .5rem .9rem;
+    font-family: var(--font-mono); font-size: .72rem; font-weight: 700;
+    cursor: pointer; transition: all var(--transition);
+    display: flex; align-items: center; gap: .4rem;
+    white-space: nowrap;
+  }
+
+  .add-cart-btn:hover {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 12px var(--green)22;
+  }
+
+  .add-cart-btn.added {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .stock-badge {
+    position: absolute; top: .75rem; right: .75rem; z-index: 2;
+    font-family: var(--font-mono); font-size: .6rem; font-weight: 700;
+    padding: .2rem .6rem; border-radius: 999px; letter-spacing: .06em;
+  }
+
+  .stock-low {
+    background: rgba(248,81,73,.12);
+    color: var(--red);
+    border: 1px solid var(--red)44;
+  }
+
+  .stock-new {
+    background: rgba(31,111,235,.12);
+    color: var(--blue-light);
+    border: 1px solid var(--blue)44;
+  }
+
+  /* ── BANNER ── */
+  .banner {
+    margin: 0 clamp(1rem,5vw,3rem);
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(31,111,235,.1) 50%, var(--bg-elevated) 100%);
+    border: 1px solid var(--blue)44;
+    border-radius: var(--radius-lg);
+    padding: clamp(2rem,4vw,3rem);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem; align-items: center;
+    position: relative; overflow: hidden;
+  }
+
+  .banner::before {
+    content: '';
+    position: absolute; top: -50%; left: -20%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, var(--blue)18 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .banner-tag {
+    font-family: var(--font-mono); font-size: .7rem;
+    color: var(--blue-light); text-transform: uppercase;
+    letter-spacing: .12em; margin-bottom: .75rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .banner-title {
+    font-size: clamp(1.4rem,3vw,2.2rem);
+    font-weight: 800; letter-spacing: -.02em; margin-bottom: .75rem;
+  }
+
+  .banner-sub {
+    font-family: var(--font-mono); font-size: .8rem;
+    color: var(--text-secondary); line-height: 1.6;
+  }
+
+  .banner-code {
+    background: var(--bg-base);
+    border: 1px solid var(--green)44;
+    border-radius: var(--radius);
+    padding: 1.25rem 1.75rem;
+    text-align: center; min-width: 200px;
+    position: relative; z-index: 1;
+  }
+
+  .banner-code-label {
+    font-family: var(--font-mono); font-size: .65rem;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: .1em; margin-bottom: .5rem;
+  }
+
+  .banner-code-value {
+    font-family: var(--font-mono); font-size: 1.5rem;
+    font-weight: 700; color: var(--green);
+    letter-spacing: .1em;
+    text-shadow: 0 0 20px var(--green)44;
+  }
+
+  .banner-code-discount {
+    font-family: var(--font-mono); font-size: .75rem;
+    color: var(--text-secondary); margin-top: .35rem;
+  }
+
+  @media (max-width: 600px) {
+    .banner { grid-template-columns: 1fr; }
+    .banner-code { text-align: left; }
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .feature-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .feature-card:hover {
+    border-color: var(--blue)44;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    background: var(--blue-dim);
+    border: 1px solid var(--blue)33;
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+
+  .feature-title {
+    font-weight: 700; font-size: .9rem;
+    margin-bottom: .4rem;
+  }
+
+  .feature-desc {
+    font-family: var(--font-mono); font-size: .72rem;
+    color: var(--text-secondary); line-height: 1.6;
+  }
+
+  /* ── CART DRAWER ── */
+  .cart-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s;
+  }
+
+  .cart-overlay.open { opacity: 1; pointer-events: all; }
+
+  .cart-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 420px; max-width: 100vw; z-index: 201;
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+    box-shadow: -20px 0 60px rgba(0,0,0,.5);
+  }
+
+  .cart-drawer.open { transform: translateX(0); }
+
+  .cart-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem; border-bottom: 1px solid var(--border);
+  }
+
+  .cart-header-title {
+    font-weight: 800; font-size: 1.1rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .cart-count-pill {
+    background: var(--blue-dim);
+    color: var(--blue-light); border: 1px solid var(--blue)44;
+    font-family: var(--font-mono); font-size: .7rem; font-weight: 700;
+    border-radius: 999px; padding: .15rem .6rem;
+  }
+
+  .close-btn {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    color: var(--text-secondary); border-radius: var(--radius);
+    width: 34px; height: 34px; display: grid; place-items: center;
+    cursor: pointer; transition: all var(--transition); font-size: 1rem;
+  }
+
+  .close-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .cart-items {
+    flex: 1; overflow-y: auto; padding: 1.25rem;
+    display: flex; flex-direction: column; gap: .75rem;
+  }
+
+  .cart-items::-webkit-scrollbar { width: 4px; }
+  .cart-items::-webkit-scrollbar-track { background: transparent; }
+  .cart-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .cart-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    display: flex; align-items: center; gap: .75rem;
+    animation: slide-in .2s ease;
+  }
+
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .cart-item-emoji { font-size: 2rem; flex-shrink: 0; }
+
+  .cart-item-info { flex: 1; min-width: 0; }
+
+  .cart-item-name {
+    font-weight: 700; font-size: .85rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .cart-item-price {
+    font-family: var(--font-mono); font-size: .75rem;
+    color: var(--green); margin-top: .2rem;
+  }
+
+  .cart-item-qty {
+    display: flex; align-items: center; gap: .4rem;
+  }
+
+  .qty-btn {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    color: var(--text-primary); width: 26px; height: 26px;
+    border-radius: var(--radius); cursor: pointer;
+    display: grid; place-items: center;
+    font-size: .8rem; transition: all var(--transition);
+  }
+
+  .qty-btn:hover { border-color: var(--blue); color: var(--blue-light); }
+
+  .qty-val {
+    font-family: var(--font-mono); font-size: .8rem;
+    min-width: 20px; text-align: center;
+  }
+
+  .remove-btn {
+    background: none; border: none;
+    color: var(--text-muted); cursor: pointer;
+    font-size: .85rem; padding: .25rem;
+    border-radius: var(--radius); transition: color var(--transition);
+  }
+
+  .remove-btn:hover { color: var(--red); }
+
+  .cart-empty {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono); font-size: .85rem;
+  }
+
+  .cart-empty .empty-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+
+  .cart-footer {
+    padding: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .cart-subtotal {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: .5rem;
+    font-family: var(--font-mono); font-size: .8rem; color: var(--text-secondary);
+  }
+
+  .cart-total {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 1.25rem;
+    padding-top: .75rem; border-top: 1px solid var(--border);
+  }
+
+  .cart-total-label { font-weight: 700; font-size: 1rem; }
+
+  .cart-total-amount {
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 1.3rem; color: var(--green);
+  }
+
+  .checkout-btn {
+    width: 100%; padding: .9rem;
+    background: linear-gradient(135deg, var(--blue), var(--green));
+    border: none; border-radius: var(--radius);
+    color: #fff; font-family: var(--font-mono);
+    font-size: .82rem; font-weight: 700;
+    cursor: pointer; transition: all var(--transition);
+    letter-spacing: .04em;
+    box-shadow: 0 4px 20px rgba(31,111,235,.3);
+  }
+
+  .checkout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(31,111,235,.4);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+    background: var(--bg-surface);
+  }
+
+  .footer-inner {
+    max-width: 1280px; margin: 0 auto;
+    padding: 3rem clamp(1rem,5vw,3rem);
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 3rem;
+  }
+
+  @media (max-width: 768px) {
+    .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
+  }
+
+  @media (max-width: 480px) {
+    .footer-inner { grid-template-columns: 1fr; }
+  }
+
+  .footer-brand-desc {
+    font-family: var(--font-mono); font-size: .75rem;
+    color: var(--text-secondary); line-height: 1.7;
+    margin-top: .75rem;
+  }
+
+  .footer-col-title {
+    font-family: var(--font-mono); font-size: .7rem;
+    text-transform: uppercase; letter-spacing: .12em;
+    color: var(--text-muted); margin-bottom: 1rem;
+  }
+
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+
+  .footer-links a {
+    font-family: var(--font-mono); font-size: .78rem;
+    color: var(--text-secondary); text-decoration: none;
+    transition: color var(--transition);
+  }
+
+  .footer-links a:hover { color: var(--blue-light); }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding: 1.25rem clamp(1rem,5vw,3rem);
+    max-width: 1280px; margin: 0 auto;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  }
+
+  .footer-copy {
+    font-family: var(--font-mono); font-size: .72rem;
+    color: var(--text-muted);
+  }
+
+  .footer-copy span { color: var(--green); }
+
+  .status-dot {
+    display: flex; align-items: center; gap: .5rem;
+    font-family: var(--font-mono); font-size: .7rem;
+    color: var(--text-muted);
+  }
+
+  .status-dot::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  /* ── TOAST ── */
+  .toast-container {
+    position: fixed; bottom: 1.5rem; left: 50%;
+    transform: translateX(-50%);
+    z-index: 300; display: flex; flex-direction: column;
+    gap: .5rem; align-items: center; pointer-events: none;
+  }
+
+  .toast {
+    background: var(--bg-elevated);
+    border: 1px solid var(--green)44;
+    border-radius: var(--radius);
+    padding: .7rem 1.25rem;
+    font-family: var(--font-mono); font-size: .78rem;
+    color: var(--green);
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    animation: toast-in .3s ease, toast-out .3s ease 2.2s forwards;
+    display: flex; align-items: center; gap: .5rem;
+    white-space: nowrap;
+  }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(10px); }
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-up {
+    opacity: 0; transform: translateY(24px);
+    animation: fade-up .6s ease forwards;
+  }
+
+  @keyframes fade-up {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up:nth-child(1) { animation-delay: .05s; }
+  .fade-up:nth-child(2) { animation-delay: .1s; }
+  .fade-up:nth-child(3) { animation-delay: .15s; }
+  .fade-up:nth-child(4) { animation-delay: .2s; }
+  .fade-up:nth-child(5) { animation-delay: .25s; }
+  .fade-up:nth-child(6) { animation-delay: .3s; }
+  .fade-up:nth-child(7) { animation-delay: .35s; }
+  .fade-up:nth-child(8) { animation-delay: .4s; }
+</style>
 </head>
 <body>
-    <h1>🛒 Uno Market</h1>
-    <h2>Sistema automatizado con GitOps (Tekton + ArgoCD)</h2>
-    <div class="version-badge">Versión actual: v3.0.0</div>
+
+<div class="grid-bg"></div>
+
+<div class="page-wrapper">
+
+<!-- ════════════════ HEADER ════════════════ -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-mark">UM</div>
+      <span class="logo-text">Uno<span>Market</span></span>
+    </a>
+    <nav>
+      <a href="#" class="nav-link active">Inicio</a>
+      <a href="#catalogo" class="nav-link">Catálogo</a>
+      <a href="#" class="nav-link">Novedades</a>
+      <a href="#" class="nav-link">Ofertas</a>
+      <a href="#" class="nav-link">Acerca</a>
+    </nav>
+    <div class="header-actions">
+      <div class="search-bar">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Buscar juegos..." id="searchInput" oninput="filterProducts()">
+      </div>
+      <button class="btn btn-ghost" style="display:flex;align-items:center;gap:.4rem;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Cuenta
+      </button>
+      <button class="cart-btn" onclick="openCart()" title="Carrito">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════ HERO ════════════════ -->
+<section>
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Envío gratis en pedidos +$599</div>
+      <h1 class="hero-title">
+        Tu próxima<br>
+        <span class="accent-blue">partida épica</span><br>
+        te espera<span class="accent-green">.</span>
+      </h1>
+      <p class="hero-sub">
+        // Más de 200 juegos de mesa seleccionados.<br>
+        // Estrategia · Cooperativo · Familiar · Rol
+      </p>
+      <div class="hero-actions">
+        <a href="#catalogo" class="btn btn-primary">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-8 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+          Explorar catálogo
+        </a>
+        <a href="#" class="btn btn-ghost">Ver novedades →</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-val">200<span>+</span></div>
+          <div class="stat-label">Títulos</div>
+        </div>
+        <div>
+          <div class="stat-val">48<span>h</span></div>
+          <div class="stat-label">Entrega</div>
+        </div>
+        <div>
+          <div class="stat-val">4.9<span>★</span></div>
+          <div class="stat-label">Calificación</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual" id="heroVisual"></div>
+  </div>
+</section>
+
+<!-- ════════════════ TICKER ════════════════ -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker"></div>
+</div>
+
+<!-- ════════════════ BANNER ════════════════ -->
+<div class="banner">
+  <div>
+    <div class="banner-tag">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Oferta de temporada
+    </div>
+    <h2 class="banner-title">−20% en juegos de<br>estrategia este mes</h2>
+    <p class="banner-sub">Usa el código al finalizar tu compra.<br>Válido hasta el 30 de junio · Aplican restricciones.</p>
+  </div>
+  <div class="banner-code">
+    <div class="banner-code-label">Código de descuento</div>
+    <div class="banner-code-value" onclick="copyCode(this)">STRAT20</div>
+    <div class="banner-code-discount">Click para copiar · 20% OFF</div>
+  </div>
+</div>
+
+<!-- ════════════════ CATÁLOGO ════════════════ -->
+<section class="section" id="catalogo">
+  <div class="section-header">
+    <div>
+      <div class="section-label">// catálogo.productos</div>
+      <h2 class="section-title">Todos los Juegos</h2>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:.75rem;color:var(--text-muted)" id="resultCount"></div>
+  </div>
+  <div class="filter-bar" id="filterBar"></div>
+  <div class="products-grid" id="productsGrid"></div>
+</section>
+
+<!-- ════════════════ FEATURES ════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-label">// servicios.info</div>
+      <h2 class="section-title">Por qué Uno Market</h2>
+    </div>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card fade-up">
+      <div class="feature-icon">🚀</div>
+      <div class="feature-title">Envío en 48h</div>
+      <div class="feature-desc">Despacho desde CDMX a todo México. Gratis en compras mayores a $599 MXN.</div>
+    </div>
+    <div class="feature-card fade-up">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-title">Pago Seguro</div>
+      <div class="feature-desc">Encriptación SSL en todas las transacciones. Aceptamos tarjetas, OXXO y transferencia.</div>
+    </div>
+    <div class="feature-card fade-up">
+      <div class="feature-icon">🔄</div>
+      <div class="feature-title">Devoluciones</div>
+      <div class="feature-desc">30 días para devolución sin preguntas. Producto sellado o defecto de fábrica.</div>
+    </div>
+    <div class="feature-card fade-up">
+      <div class="feature-icon">🎧</div>
+      <div class="feature-title">Soporte 7×24</div>
+      <div class="feature-desc">Chat en línea, WhatsApp y correo electrónico. Tiempo de respuesta &lt; 2 horas.</div>
+    </div>
+    <div class="feature-card fade-up">
+      <div class="feature-icon">⭐</div>
+      <div class="feature-title">Curación Editorial</div>
+      <div class="feature-desc">Cada título es revisado por nuestro equipo. Solo lo mejor del mercado global.</div>
+    </div>
+    <div class="feature-card fade-up">
+      <div class="feature-icon">🎁</div>
+      <div class="feature-title">Programa de Puntos</div>
+      <div class="feature-desc">Acumula 1 punto por cada $10. Canjea en tu siguiente compra sin límite.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ FOOTER ════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <a href="#" class="logo" style="text-decoration:none;display:inline-flex;margin-bottom:.75rem;">
+        <div class="logo-mark">UM</div>
+        <span class="logo-text" style="margin-left:.6rem;">Uno<span>Market</span></span>
+      </a>
+      <p class="footer-brand-desc">La tienda de juegos de mesa más completa de México. Estrategia, cooperativo, familiar y más.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Tienda</div>
+      <ul class="footer-links">
+        <li><a href="#">Catálogo</a></li>
+        <li><a href="#">Novedades</a></li>
+        <li><a href="#">Ofertas</a></li>
+        <li><a href="#">Pre-orders</a></li>
+        <li><a href="#">Gift Cards</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Soporte</div>
+      <ul class="footer-links">
+        <li><a href="#">Centro de ayuda</a></li>
+        <li><a href="#">Rastrear pedido</a></li>
+        <li><a href="#">Devoluciones</a></li>
+        <li><a href="#">Garantías</a></li>
+        <li><a href="#">Contacto</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <ul class="footer-links">
+        <li><a href="#">Privacidad</a></li>
+        <li><a href="#">Términos</a></li>
+        <li><a href="#">Cookies</a></li>
+        <li><a href="#">Aviso Legal</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 <span>Uno Market</span>. Todos los derechos reservados.</div>
+    <div class="status-dot">Todos los sistemas operativos</div>
+  </div>
+</footer>
+
+</div><!-- /.page-wrapper -->
+
+<!-- ════════════════ CART DRAWER ════════════════ -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <div class="cart-header-title">
+      🛒 Carrito
+      <span class="cart-count-pill" id="cartCountPill">0 items</span>
+    </div>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal"></span></div>
+    <div class="cart-subtotal"><span>Envío</span><span style="color:var(--green)">Gratis</span></div>
+    <div class="cart-total">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-amount" id="cartTotal"></span>
+    </div>
+    <button class="checkout-btn" onclick="showToast('🎉 ¡Gracias! Redirigiendo al pago...')">
+      Finalizar compra →
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════ TOAST ════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ════════════════ JAVASCRIPT ════════════════ -->
+<script>
+const PRODUCTS = [
+  {
+    id:1, name:"Catan", category:"Estrategia", emoji:"🏝️",
+    desc:"Coloniza la isla de Catán, comercia recursos y construye caminos y ciudades antes que tus rivales.",
+    price:649, original:null, players:"3-4", age:"10+", featured:true, stock:"normal", badge:"new"
+  },
+  {
+    id:2, name:"Pandemic", category:"Cooperativo", emoji:"🧬",
+    desc:"Trabaja en equipo para detener la propagación de enfermedades mortales alrededor del globo.",
+    price:589, original:699, players:"2-4", age:"8+", featured:false, stock:"low", badge:null
+  },
+  {
+    id:3, name:"Ticket to Ride", category:"Familiar", emoji:"🚂",
+    desc:"Construye rutas ferroviarias a través de América del Norte y conecta las ciudades del mapa.",
+    price:749, original:null, players:"2-5", age:"8+", featured:false, stock:"normal", badge:null
+  },
+  {
+    id:4, name:"Gloomhaven", category:"Aventura", emoji:"⚔️",
+    desc:"La campaña de dungeon crawler más épica jamás creada. Más de 95 escenarios y decisiones permanentes.",
+    price:2199, original:2499, players:"1-4", age:"14+", featured:true, stock:"normal", badge:"new"
+  },
+  {
+    id:5, name:"Codenames", category:"Social", emoji:"🕵️",
+    desc:"Adivina las palabras secretas usando pistas de una sola palabra. El juego de fiesta definitivo.",
+    price:379, original:null, players:"2-8", age:"14+", featured:false, stock:"normal", badge:null
+  },
+  {
+    id:6, name:"7 Wonders", category:"Estrategia", emoji:"🏛️",
+    desc:"Lidera una de las 7 maravillas del mundo antiguo y guía a tu civilización a la gloria.",
+    price:699, original:799, players:"2-7", age:"10+", featured:false, stock:"low", badge:null
+  },
+  {
+    id:7, name:"Dixit", category:"Familiar", emoji:"🦋",
+    desc:"Narra historias con ilustraciones surrealistas. Imaginación y creatividad como mecánica principal.",
+    price:449, original:null, players:"3-6", age:"8+", featured:false, stock:"normal", badge:null
+  },
+  {
+    id:8, name:"Arkham Horror", category:"Aventura", emoji:"🐙",
+    desc:"Investiga misterios cósmicos en la ciudad de Arkham. Terror lovecraftiano en mesa.",
+    price:1299, original:1499, players:"1-6", age:"14+", featured:false, stock:"normal", badge:null
+  },
+  {
+    id:9, name:"Azul", category:"Abstracto", emoji:"🔷",
+    desc:"Coloca azulejos portugueses en tu tablero con la máxima elegancia. Estrategia pura y hermosa.",
+    price:529, original:null, players:"2-4", age:"8+", featured:true, stock:"normal", badge:"new"
+  },
+  {
+    id:10, name:"Wingspan", category:"Estrategia", emoji:"🦆",
+    desc:"Atrae a las aves más fascinantes a tu reserva. El engine-builder más bello del mundo moderno.",
+    price:899, original:999, players:"1-5", age:"10+", featured:false, stock:"normal", badge:null
+  },
+  {
+    id:11, name:"Sheriff of Nottingham", category:"Social", emoji:"🏹",
+    desc:"Blufea, negocia y soborна al sheriff para contrabandear los mejores productos al mercado.",
+    price:479, original:null, players:"3-5", age:"14+", featured:false, stock:"low", badge:null
+  },
+  {
+    id:12, name:"Root", category:"Estrategia", emoji:"🦊",
+    desc:"Facciones asimétricas luchan por el control del bosque. Uno de los diseños más innovadores del siglo.",
+    price:1099, original:1299, players:"2-4", age:"10+", featured:false, stock:"normal", badge:"new"
+  }
+];
+
+const CATEGORIES = ["Todos", ...new Set(PRODUCTS.map(p => p.category))];
+let cart = {};
+let activeFilter = "Todos";
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderFilters();
+  renderProducts();
+  renderHeroCards();
+  renderTicker();
+  updateCartUI();
+});
+
+// ── HERO CARDS ──
+function renderHeroCards() {
+  const featured = PRODUCTS.filter(p => p.featured).slice(0,3);
+  const wrap = document.getElementById('heroVisual');
+  wrap.innerHTML = featured.map((p,i) => `
+    <div class="hero-card fade-up" style="animation-delay:${.1+i*.1}s" onclick="scrollToProduct(${p.id})">
+      <span class="hero-card-emoji">${p.emoji}</span>
+      <div class="hero-card-name">${p.name}</div>
+      <div class="hero-card-price">$${p.price.toLocaleString('es-MX')} MXN</div>
+    </div>
+  `).join('');
+}
+
+function scrollToProduct(id) {
+  document.getElementById('catalogo').scrollIntoView({behavior:'smooth'});
+}
+
+// ── TICKER ──
+function renderTicker() {
+  const items = [
+    ...PRODUCTS.map(p => `<div class="ticker-item"><span class="dot"></span>${p.emoji} ${p.name} — $${p.price.toLocaleString('es-MX')} MXN${p.stock==='low'?' <span class="hot">· Últimas unidades</span>':''}</div>`),
+    ...PRODUCTS.map(p => `<div class="ticker-item"><span class="dot"></span>${p.emoji} ${p.name} — $${p.price.toLocaleString('es-MX')} MXN${p.stock==='low'?' <span class="hot">· Últimas unidades</span>':''}</div>`)
+  ];
+  document.getElementById('ticker').innerHTML = items.join('');
+}
+
+// ── FILTERS ──
+function renderFilters() {
+  const bar = document.getElementById('filterBar');
+  bar.innerHTML = CATEGORIES.map(c => `
+    <button class="filter-chip ${c===activeFilter?'active':''}" onclick="setFilter('${c}')">${c}</button>
+  `).join('');
+}
+
+function setFilter(cat) {
+  activeFilter = cat;
+  renderFilters();
+  renderProducts();
+}
+
+// ── SEARCH ──
+function filterProducts() {
+  renderProducts();
+}
+
+// ── PRODUCTS ──
+function renderProducts() {
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  let filtered = PRODUCTS.filter(p => {
+    const matchCat = activeFilter === 'Todos' || p.category === activeFilter;
+    const matchQ   = !q || p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length!==1?'s':''}`;
+  const grid = document.getElementById('productsGrid');
+  if(!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted);font-family:var(--font-mono);font-size:.85rem;">// No se encontraron resultados para "${q}"</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(p => productCard(p)).join('');
+}
+
+function productCard(p) {
+  const inCart = cart[p.id]?.qty > 0;
+  const discount = p.original ? Math.round((1-p.price/p.original)*100) : 0;
+  return `
+    <div class="product-card fade-up ${p.featured?'featured':''}" id="card-${p.id}">
+      ${p.badge==='new'?'<span class="stock-badge stock-new">NUEVO</span>':''}
+      ${p.stock==='low'?'<span class="stock-badge stock-low">ÚLTIMAS UNIDADES</span>':''}
+      <div class="product-img">${p.emoji}</div>
+      <div class="product-body">
+        <div class="product-category">${p.category}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-meta">
+          <span class="product-players">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            ${p.players}
+          </span>
+          <span class="product-age">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${p.age}
+          </span>
+          ${discount?`<span style="font-family:var(--font-mono);font-size:.65rem;color:var(--red);background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:999px;padding:.15rem .5rem;">−${discount}%</span>`:''}
+        </div>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">
+          <span class="currency">$</span>${p.price.toLocaleString('es-MX')}
+          ${p.original?`<span class="original">$${p.original.toLocaleString('es-MX')}</span>`:''}
+        </div>
+        <button class="add-cart-btn ${inCart?'added':''}" id="btn-${p.id}" onclick="addToCart(${p.id})">
+          ${inCart
+            ? `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Agregado`
+            : `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agregar`
+          }
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ── CART ──
+function addToCart(id) {
+  const p = PRODUCTS.find(x => x.id===id);
+  if(!p) return;
+  if(cart[id]) { cart[id].qty++; }
+  else { cart[id] = { ...p, qty: 1 }; }
+  updateCartUI();
+  renderProducts();
+  showToast(`✓ ${p.emoji} ${p.name} agregado al carrito`);
+  // Badge bump
+  const badge = document.getElementById('cartBadge');
+  badge.classList.remove('bump');
+  void badge.offsetWidth;
+  badge.classList.add('bump');
+}
+
+function removeFromCart(id) {
+  delete cart[id];
+  updateCartUI();
+  renderProducts();
+  renderCartItems();
+}
+
+function changeQty(id, delta) {
+  if(!cart[id]) return;
+  cart[id].qty += delta;
+  if(cart[id].qty <= 0) { removeFromCart(id); return; }
+  updateCartUI();
+  renderCartItems();
+}
+
+function updateCartUI() {
+  const total = Object.values(cart).reduce((s,i) => s+i.qty, 0);
+  const amount = Object.values(cart).reduce((s,i) => s+i.price*i.qty, 0);
+  document.getElementById('cartBadge').textContent = total;
+  document.getElementById('cartCountPill').textContent = `${total} item${total!==1?'s':''}`;
+  document.getElementById('cartSubtotal').textContent = `$${amount.toLocaleString('es-MX')} MXN`;
+  document.getElementById('cartTotal').querySelector('#cartTotal')?.remove();
+  document.getElementById('cartTotal').innerHTML = `<span class="cart-total-label">Total</span><span class="cart-total-amount">$${amount.toLocaleString('es-MX')} MXN</span>`;
+  document.getElementById('cartFooter').style.display = total > 0 ? 'block' : 'none';
+  renderCartItems();
+}
+
+function renderCartItems() {
+  const container = document.getElementById('cartItems');
+  const items = Object.values(cart);
+  if(!items.length) {
+    container.innerHTML = `<div class="cart-empty"><span class="empty-icon">🎲</span>Tu carrito está vacío.<br>¡Explora el catálogo!</div>`;
+    return;
+  }
+  container.innerHTML = items.map(item => `
+    <div class="cart-item">
+      <span class="cart-item-emoji">${item.emoji}</span>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">$${(item.price*item.qty).toLocaleString('es-MX')} MXN</div>
+      </div>
+      <div class="cart-item-qty">
+        <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+        <span class="qty-val">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+      </div>
+      <button class="remove-btn" onclick="removeFromCart(${item.id})" title="Eliminar">✕</button>
+    </div>
+  `).join('');
+}
+
+function openCart() {
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderCartItems();
+}
+
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── PROMO CODE ──
+function copyCode(el) {
+  navigator.clipboard?.writeText(el.textContent.trim()).then(() => {
+    showToast('📋 Código copiado al portapapeles');
+  }).catch(() => showToast('📋 Código: ' + el.textContent.trim()));
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 2600);
+}
+
+// Keyboard shortcut: Escape closes cart
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeCart();
+});
+</script>
 </body>
 </html>
