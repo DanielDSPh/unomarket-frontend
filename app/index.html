@@ -1491,5 +1491,22 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape') closeCart();
 });
 </script>
+<div id="productos-lista" style="background: #222; padding: 20px; border-radius: 5px; margin-top: 20px;">
+    Cargando productos desde PostgreSQL...
+</div>
+
+<script>
+    fetch('/api/productos')
+        .then(response => response.json())
+        .then(data => {
+            let html = '<h3>Catálogo de Base de Datos:</h3><ul>';
+            data.forEach(p => { html += `<li>${p.nombre} - $${p.precio}</li>`; });
+            html += '</ul>';
+            document.getElementById('productos-lista').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('productos-lista').innerHTML = 'Error de conexión: ' + error;
+        });
+</script>
 </body>
 </html>
