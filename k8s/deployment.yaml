@@ -15,11 +15,10 @@ spec:
     spec:
       containers:
       - name: web
-        # Cambia esto por tu usuario de Docker Hub
         image: ludanieldori/unomarket-front:v5
         imagePullPolicy: Always
         ports:
         - containerPort: 80
         resources:
           limits:
-            memory: "64Mi" # Ultra ligero para salvar tu RAM
+            memory: "64Mi"
