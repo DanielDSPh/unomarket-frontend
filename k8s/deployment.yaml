@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: ludanieldori/unomarket-front:v5
+        image: ludanieldori/unomarket-front:v6
         imagePullPolicy: Always
         ports:
         - containerPort: 80
